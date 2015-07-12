@@ -1,20 +1,31 @@
 package com.udacity.iyert.spotifystreamer;
 
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
+import java.util.List;
+
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 
 
@@ -24,6 +35,11 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 public class MainActivityFragment extends Fragment {
 
     EditText mArtistText;
+    ListView mArtistListView;
+
+    ArtistListAdapter mArtistListAdapter;
+
+    public static final String ARTIST_ID_EXTRA = "artistId";
 
     public MainActivityFragment() {
     }
@@ -31,15 +47,34 @@ public class MainActivityFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        mArtistListAdapter = new ArtistListAdapter(getActivity(), R.layout.artist_item_layout);
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mArtistText = (EditText) getActivity().findViewById(R.id.artist_search_edittext);
         mArtistText = (EditText) view.findViewById(R.id.artist_search_edittext);
-        //mArtistText.setOnEditorActionListener(new SearchEditListener());
-        mArtistText.addTextChangedListener(new SearchListener());
+        mArtistText.setOnEditorActionListener(new SearchEditListener());
+
+        mArtistListView = (ListView) view.findViewById(R.id.artist_list_view);
+        mArtistListView.setAdapter(mArtistListAdapter);
+        mArtistListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ArtistListAdapter artistListAdapter = (ArtistListAdapter) parent.getAdapter();
+
+                Artist artist = artistListAdapter.getItem(position);
+
+                Intent tracksIntent = new Intent(getActivity(), Top10TracksActivity.class);
+                tracksIntent.putExtra("artistId", artist.id);
+                startActivity(tracksIntent);
+            }
+        });
+
+
+        //mArtistText.addTextChangedListener(new SearchListener());
 
         return view;
     }
+
 
     private class SearchEditListener implements TextView.OnEditorActionListener{
 
@@ -57,6 +92,9 @@ public class MainActivityFragment extends Fragment {
                             mArtistText.getText(), Toast.LENGTH_LONG);
                     toast.show();
 
+                    FetchArtistsClass fetchArtistsClass = new FetchArtistsClass();
+                    fetchArtistsClass.execute(new String[]{String.valueOf(mArtistText.getText())});
+
                     return true; // consume.
                 }
             }
@@ -64,7 +102,10 @@ public class MainActivityFragment extends Fragment {
         }
     }
 
-    private class SearchListener implements TextWatcher{
+    /*private class SearchListener implements TextWatcher{
+
+
+
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -76,25 +117,73 @@ public class MainActivityFragment extends Fragment {
                     s, Toast.LENGTH_SHORT);
             toast.show();
 
-            //Connect to SpotifyApi
+            /*//*/Connect to SpotifyApi
             SpotifyApi api = new SpotifyApi();
 
             //Create A Spotify Service object
-            SpotifyService spotify = api.getService();
+            SpotifyService spotify = api.getService();*//*
 
-            ArtistsPager artistsPager = spotify.searchArtists(String.valueOf(s));
+           // ArtistsPager artistsPager = spotify.searchArtists(String.valueOf(s));
 
-            if(artistsPager.artists.next!=null) {
+            *//*if(artistsPager.artists.next!=null) {
                 Toast toastArt = Toast.makeText(getActivity().getApplicationContext(),
                         artistsPager.artists.next, Toast.LENGTH_SHORT);
                 toastArt.show();
-            }
+            }*//*
 
         }
 
         @Override
         public void afterTextChanged(Editable s) {
 
+
+        }
+    }*/
+
+    private class FetchArtistsClass extends AsyncTask<String, Void, List<Artist>>{
+        @Override
+        protected List<Artist> doInBackground(String... params) {
+
+            List<Artist> artists = null;
+
+            if(params==null || params[0]==null || params[0].equals(""))
+                return null;
+
+            String query = params[0];
+
+            //Connect to SpotifyApi
+            SpotifyApi api = new SpotifyApi();
+
+            //Create A Spotify Service object
+            SpotifyService spotify = api.getService();
+
+            ArtistsPager artistsPager = spotify.searchArtists(query);
+
+
+            if(artistsPager==null){
+
+            }else{
+                artists = artistsPager.artists.items;
+
+                //mArtistListAdapter.clear();
+                //mArtistListAdapter.addAll(artists);
+                for (Artist artist: artists){
+                    Log.d("SearchArtistsTask", artist.name);
+                    Log.d("SearchArtistsTask", artist.uri);
+                }
+
+            }
+
+            return artists;
+        }
+
+        @Override
+        protected void onPostExecute(List<Artist> artists) {
+            super.onPostExecute(artists);
+            if(artists!=null) {
+                mArtistListAdapter.clear();
+                mArtistListAdapter.addAll(artists);
+            }
         }
     }
 }

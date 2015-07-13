@@ -1,4 +1,4 @@
-package com.udacity.iyert.spotifystreamer;
+package com.udacity.iyert.spotifystreamer.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,13 +9,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.udacity.iyert.spotifystreamer.R;
 
-import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
 
 /**
  * Created by Tejas on 7/4/2015.
+ * @author Tejas
+ * Custom Adapter for the Track List View
  */
 public class TrackListAdapter extends ArrayAdapter<Track> {
 
@@ -27,11 +29,13 @@ public class TrackListAdapter extends ArrayAdapter<Track> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.artist_item_layout, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.track_item_layout, parent, false);
         }
 
+        //get the item
         Track track = getItem(position);
 
+        //set the image and other fields
         ImageView iconView = (ImageView) convertView.findViewById(R.id.artist_image_view);
         if(track.album.images!=null && track.album.images.size()>0) {
             for (Image image : track.album.images){
@@ -40,10 +44,15 @@ public class TrackListAdapter extends ArrayAdapter<Track> {
                     Picasso.with(getContext()).load(image.url).into(iconView);
                 }
             }
+        } else {
+            iconView.setImageResource(R.drawable.no_image_default);
         }
 
-        TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
-        versionNameView.setText(track.name);
+        TextView trackNameView = (TextView) convertView.findViewById(R.id.track_name_view);
+        trackNameView.setText(track.name);
+
+        TextView albumNameView = (TextView) convertView.findViewById(R.id.album_name_view);
+        albumNameView.setText(track.album.name);
 
         /*ViewHolder viewHolder = new ViewHolder(convertView);
         convertView.setTag(viewHolder);*/
@@ -54,6 +63,10 @@ public class TrackListAdapter extends ArrayAdapter<Track> {
         return convertView;
     }
 
+    /**
+     * Private view holder class
+     * //had problems while using -- will refactor in stage 2
+     */
     public static class ViewHolder {
         public final ImageView artistImageView;
         public final TextView artistNameView;

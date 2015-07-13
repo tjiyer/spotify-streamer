@@ -11,6 +11,9 @@ public class Top10TracksActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //TODO - Change title bar layout to 2 lines
+        getSupportActionBar().setTitle(getString(R.string.title_activity_top10_tracks)+" - "
+                +getIntent().getStringExtra(MainActivityFragment.ARTIST_NAME_EXTRA));
         setContentView(R.layout.activity_top10_tracks);
     }
 

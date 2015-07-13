@@ -12,6 +12,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.udacity.iyert.spotifystreamer.dto.ArtistItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Image;
@@ -19,10 +23,14 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * Created by Tejas on 7/4/2015.
  */
-public class ArtistListAdapter extends ArrayAdapter<Artist> {
+public class ArtistListAdapter extends ArrayAdapter<ArtistItem> {
 
     public ArtistListAdapter(Context context, int resource) {
         super(context, resource);
+    }
+
+    public ArtistListAdapter(Context context, int resource, List<ArtistItem> list){
+        super(context, resource, list);
     }
 
     @Override
@@ -32,20 +40,16 @@ public class ArtistListAdapter extends ArrayAdapter<Artist> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.artist_item_layout, parent, false);
         }
 
-        Artist artist = getItem(position);
+        ArtistItem artist = getItem(position);
 
         ImageView iconView = (ImageView) convertView.findViewById(R.id.artist_image_view);
-        if(artist.images!=null && artist.images.size()>0) {
-            for (Image image : artist.images){
-                if(image.height==64 && image.width==64){
-                    //Set image in ImageView
-                    Picasso.with(getContext()).load(image.url).into(iconView);
-                }
-            }
+        if(artist.getArtistImageUrl()!=null && !artist.getArtistImageUrl().equals("")) {
+                //Set image in ImageView
+                Picasso.with(getContext()).load(artist.getArtistImageUrl()).into(iconView);
         }
 
         TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
-        versionNameView.setText(artist.name);
+        versionNameView.setText(artist.getArtistName());
 
         /*ViewHolder viewHolder = new ViewHolder(convertView);
         convertView.setTag(viewHolder);*/

@@ -27,6 +27,7 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Image;
+import retrofit.RetrofitError;
 
 
 /**
@@ -175,8 +176,16 @@ public class MainActivityFragment extends Fragment {
             //Create A Spotify Service object
             SpotifyService spotify = api.getService();
 
-            //Query for the artists
-            ArtistsPager artistsPager = spotify.searchArtists(query);
+            ArtistsPager artistsPager = null;
+            try{
+                //Query for the artists
+                artistsPager = spotify.searchArtists(query);
+            } catch (RetrofitError r){
+                Log.e("FetchTracks", r.getMessage());
+            } catch (Exception e){
+                Log.e("FetchTracks", e.getMessage());
+            }
+
 
             //if artists!=null
             if(artistsPager!=null){
